@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import { StyleSheet, ImageBackground, SafeAreaView } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  ImageBackground,
+  SafeAreaView,
+  Button,
+} from 'react-native';
 import StartGameScreen from './screens/StartGameScreen';
 import { LinearGradient } from 'expo-linear-gradient';
 import GameScreen from './screens/GameScreen';
@@ -8,11 +13,34 @@ import Colors from './constants/colors';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
 import { StatusBar } from 'expo-status-bar';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    };
+  },
+});
 
 export default function App() {
   const [userNumber, setUserNumber] = useState();
   const [gameIsOver, setGameIsOver] = useState(true);
   const [guessRounds, setGuessRounds] = useState(0);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log(notification);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const [fontsLoaded] = useFonts({
     'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
@@ -38,7 +66,24 @@ export default function App() {
     setUserNumber(null);
   };
 
-  let screen = <StartGameScreen onPickedNumber={pickedNumberHandler} />;
+  const schelduleNotification = () => {
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'My first local notification',
+        body: 'This is the body of the notification',
+      },
+      trigger: {
+        seconds: 5,
+      },
+    });
+  };
+
+  let screen = (
+    <>
+      <StartGameScreen onPickedNumber={pickedNumberHandler} />
+      <Button title='Push Notification' onPress={schelduleNotification} />
+    </>
+  );
   if (userNumber) {
     screen = (
       <GameScreen userNumber={userNumber} onGameOver={gameOverHandler} />
@@ -56,20 +101,20 @@ export default function App() {
 
   return (
     <>
-    <StatusBar style='inverted' />
-    <LinearGradient
-      colors={[Colors.primary700, Colors.accent500]}
-      style={styles.rootScreen}
-    >
-      <ImageBackground
-        source={require('./assets/images/dices.jpg')}
-        resizeMethod='scale'
+      <StatusBar style='inverted' />
+      <LinearGradient
+        colors={[Colors.primary700, Colors.accent500]}
         style={styles.rootScreen}
-        imageStyle={styles.backgroundImage}
       >
-        <SafeAreaView style={styles.rootScreen}>{screen}</SafeAreaView>
-      </ImageBackground>
-    </LinearGradient>
+        <ImageBackground
+          source={require('./assets/images/dices.jpg')}
+          resizeMethod='scale'
+          style={styles.rootScreen}
+          imageStyle={styles.backgroundImage}
+        >
+          <SafeAreaView style={styles.rootScreen}>{screen}</SafeAreaView>
+        </ImageBackground>
+      </LinearGradient>
     </>
   );
 }
