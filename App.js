@@ -49,7 +49,7 @@ export default function App() {
       const token = await Notifications.getExpoPushTokenAsync();
       console.log(token);
 
-      if(Platform.OS === 'android'){
+      if (Platform.OS === 'android') {
         Notifications.setNotificationChannelAsync('default', {
           name: 'default',
           importance: Notifications.AndroidImportance.DEFAULT,
@@ -57,7 +57,6 @@ export default function App() {
           lightColor: '#FF231F7C',
         });
       }
-
     };
 
     configurePushNotifications();
@@ -116,11 +115,27 @@ export default function App() {
       },
     });
   };
+  const sendPushNotification = async () => {
+    fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
+        title: 'Sent via the app',
+        body: 'This push notification was sent via the app!',
+      }),
+    });
+  };
 
   let screen = (
     <>
       <StartGameScreen onPickedNumber={pickedNumberHandler} />
-      <Button title='Push Notification' onPress={schelduleNotification} />
+      <Button title='Local Notification' onPress={schelduleNotification} />
+      <Button title='Push Notification' onPress={sendPushNotification} />
     </>
   );
   if (userNumber) {
