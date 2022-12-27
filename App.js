@@ -4,6 +4,8 @@ import {
   ImageBackground,
   SafeAreaView,
   Button,
+  Alert,
+  Platform,
 } from 'react-native';
 import StartGameScreen from './screens/StartGameScreen';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,6 +31,37 @@ export default function App() {
   const [userNumber, setUserNumber] = useState();
   const [gameIsOver, setGameIsOver] = useState(true);
   const [guessRounds, setGuessRounds] = useState(0);
+
+  useEffect(() => {
+    const configurePushNotifications = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            'Permission not granted',
+            'You need to grant permission to use push notifications',
+            [{ text: 'Okay' }]
+          );
+          return;
+        }
+      }
+      const token = await Notifications.getExpoPushTokenAsync();
+      console.log(token);
+
+      if(Platform.OS === 'android'){
+        Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.DEFAULT,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+
+    };
+
+    configurePushNotifications();
+  }, []);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener(
