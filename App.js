@@ -36,9 +36,15 @@ export default function App() {
         console.log(notification);
       }
     );
+    const subscription2 = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('RES:', response);
+      }
+    );
 
     return () => {
       subscription.remove();
+      subscription2.remove();
     };
   }, []);
 
